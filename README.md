@@ -41,5 +41,4 @@ Supports:
 
 ## todo
 
-Better shell open, now using `Sleep(1000)` to  wait for the vditor's beging ready. 
-
+Better shell open, now using `Sleep(1000)` to  wait for the webpage's beging ready.
