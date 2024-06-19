@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- <link rel="stylesheet" type="text/css" href="/3D.css"> -->
     <script src="/calculator.js"></script>
-	<script src="/geometry.js"></script>
     <!-- <script src="/3D.js"></script> -->
     <title>Desmos</title>
   </head>
@@ -16,18 +15,35 @@
     <script>
       let elt=document.getElementById('calculator');
       let calculator = Desmos.GraphingCalculator(elt);   
+	  aardio.DomReady(true);
 	  
 	  function SwitchCalculator(Param)
 	  {
 		if(Param=="Function")
 		{
-			calculator.destroy();
+			aardio.DomReady(false);
+			try
+			{
+				calculator.destroy();
+			}
+			catch (error) {
+				console.log("Not created. ");
+			}
+			aardio.DomReady(true);
 			calculator = Desmos.GraphingCalculator(elt);
 			return Param;
 		}
 		else if(Param=="Geometry")
 		{
-			calculator.destroy();
+			aardio.DomReady(false);
+			try
+			{
+				calculator.destroy();
+			}
+			catch (error) {
+				console.log("Not created. ");
+			}
+			aardio.DomReady(true);
 			calculator = Desmos.Geometry(elt);
 			return Param;
 		}
@@ -51,7 +67,8 @@
       }
       function CloseFile()
       {
-          return calculator.setBlank();
+		  if(calculator==null) return null;
+          else return calculator.setBlank();
       }
 	  function setImageSrc(data)
 	  {

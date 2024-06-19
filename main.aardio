@@ -48,8 +48,9 @@ function Setregdit()
 
 if(#_ARGV>0&&_ARGV[1]=='SETUP') Setregdit();
 
-import web.view;
+import web.view.7;
 var theView  = web.view(mainForm.DesForm); 
+var DomReady=false;
  
 var FilePath='NULL';
 
@@ -57,24 +58,24 @@ import fsys.dlg;
 import fsys.file;
 
 
-function ReadFile(FilePath)
+function ReadFile(ReadFilePath)
 {
-	if(!io.exist(FilePath)) return '';
-	var File=fsys.file(FilePath);
+	if(!io.exist(ReadFilePath)) return '';
+	var File=fsys.file(ReadFilePath);
 	var Ans=File.readAll();
 	File.close();
 	return Ans;
 }
 
-function WriteFile(FilePath,FileText)
+function WriteFile(WriteFilePath,FileText)
 {
 	//win.msgbox("right","write");
 	//win.msgbox(FileText,FilePath);
-	var File=fsys.file(FilePath,"w");
+	var File=fsys.file(WriteFilePath,"w");
 	//var File=fsys.file(FilePath,"a");
 	File.write(FileText);
 	File.close();
-	return FilePath;
+	return WriteFilePath;
 }
 
 function CloseFile()
@@ -82,6 +83,7 @@ function CloseFile()
 	//win.msgbox("11");
 	FilePath=null;
 	mainForm.text="Desmos";
+	while(!DomReady) tmp=tmp;
 	return theView.xcall("CloseFile");
 }
 function OpenFile(Url)
@@ -98,6 +100,7 @@ function OpenFile(Url)
    	mainForm.text=FilePath;
 	
 	var FileText=ReadFile(FilePath);
+	while(!DomReady) tmp=tmp;
 	return theView.xcall('ReadFile',web.json.parse(FileText));
 }
 function SaveFile()
@@ -111,6 +114,7 @@ function SaveFile()
    	    	return false;
    		}
    	}
+   	while(!DomReady) tmp=tmp;
    	var FileText=theView.xcall("GetFile");
    	FileText=web.json.stringify(FileText)
    	//win.msgbox(FileText,FilePath);
@@ -128,9 +132,9 @@ function SaveAs()
 }
 function ExportAsSvg()
 {
-	FilePath=fsys.dlg.saveOp("Svg File(*.desgeo)|*.svg","Save File As",null,null,"SVGFile");
-    if(FilePath==null||FilePath=='NULL') return false;
-    return FilePath;
+	var SVGPath=fsys.dlg.saveOp("Svg File(*.svg)|*.svg","Save File As",null,null,"SVGFile");
+    if(SVGPath==null||SVGPath=='NULL') return false;
+    return SVGPath;
 }
 //To be fix. 
 theView.external = {
@@ -152,6 +156,11 @@ theView.external = {
 		var SVGpath=ExportAsSvg();
 		return WriteFile(SVGpath,SVGimg);
 	}
+	DomReady=function(value){
+		DomReady=value;
+		return DomReady;
+	}
+	
 }
 
 import win.image;
@@ -159,8 +168,10 @@ import win.image;
 var hCulIcon = win.image.loadIconFromFile("/web/Function.ico",true)
 var hGeoIcon = win.image.loadIconFromFile("/web/Geometry.ico",true)
 
+var tmp;
 function SwitchCalculator()
 {
+	while(!DomReady) tmp=tmp;
 	CloseFile();
 	if(mainForm.Switch.selText=="Function")
 		::SendMessage(mainForm.hwnd,0x0080,null,hCulIcon);
@@ -193,16 +204,7 @@ theView.go(url)
     win.msgboxTest(FileText,FilePath);
     return WriteFile(FilePath,FileText);
 */
-if(#_ARGV>0&&_ARGV[1]!='SETUP')
-{
-	sleep(1000);
-	if(_ARGV[2]=="GEOG")
-	{
-		mainForm.Switch.selText="Geometry";
-		SwitchCalculator();
-	}	
-	OpenFile(_ARGV[1]);
-}
+
 
 //import key;
 
@@ -272,13 +274,26 @@ mainForm.Switch.onListChange = function(id,event){
 mainForm.Exp.oncommand = function(id,event){//We may need to improve the export functions to fit more kinds of file
 
 	//win.msgboxErr("Working... ","Fixing");
-	if(mainForm.Switch.selText=="Geometry")
-		win.msgboxErr("It seems like that the Desmos Team didn't support the Geometry mode's Exporting as SVG... ","ERROR");
-	else 
-		theView.invoke("ExportSVG");
+	theView.invoke("ExportSVG");
 	return null;
 }
 
 mainForm.show();
 
 win.loopMessage();
+
+SwitchCalculator();
+if(#_ARGV>0&&_ARGV[1]!='SETUP')
+{
+	if(_ARGV[2]=="GEOG")
+	{
+		mainForm.Switch.selText="Geometry";
+	}
+	else
+	{
+		mainForm.Switch.selText="Function";
+	}
+	
+	SwitchCalculator();
+	OpenFile(_ARGV[1]);
+}
